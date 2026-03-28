@@ -1,0 +1,166 @@
+# ═══════════════════════════════════════════════════════════
+# Morning Brief — Configuration
+# ═══════════════════════════════════════════════════════════
+
+version: "1.0"
+
+# ─── Gmail API ────────────────────────────────────────────
+gmail:
+  accounts:
+    - email: "sn10019@gmail.com"
+      credentials_path: "credentials/client_secret.json"
+      token_path: "credentials/token_sn10019.json"
+    - email: "s.nagaraj1510@gmail.com"
+      credentials_path: "credentials/client_secret.json"
+      token_path: "credentials/token_s_nagaraj1510.json"
+    - email: "multistar1732@gmail.com"
+      credentials_path: "credentials/client_secret.json"
+      token_path: "credentials/token_multistar1732.json"
+    - email: "shreyn@umich.edu"
+      credentials_path: "credentials/client_secret.json"
+      token_path: "credentials/token_shreyn_umich.json"
+  scopes:
+    - "https://www.googleapis.com/auth/gmail.readonly"
+    - "https://www.googleapis.com/auth/gmail.send"
+    - "https://www.googleapis.com/auth/gmail.compose"
+  fetch_window_hours: 24
+  max_results: 200
+
+# ─── LLM Backend ─────────────────────────────────────────
+# Options: "ollama" (free, local) or "anthropic" (paid API)
+llm:
+  backend: "anthropic"
+  
+  ollama:
+    model: "llama3.1:8b"
+    base_url: "http://localhost:11434"
+    # For better accuracy, try "llama3.1:70b" if your machine supports it
+  
+  anthropic:
+    # Uses ANTHROPIC_API_KEY environment variable
+    model: "claude-haiku-4-5-20251001"    # ~$0.03/month (recommended)
+    # model: "claude-sonnet-4-6"           # ~$0.30/month (higher accuracy)
+    max_tokens: 4096
+
+# ─── Scoring Weights ─────────────────────────────────────
+# Must sum to 1.0
+scoring:
+  urgency_weight: 0.35
+  consequence_weight: 0.30
+  relationship_weight: 0.20
+  effort_weight: 0.15
+
+# ─── Category Taxonomy ───────────────────────────────────
+categories:
+  tier1:  # ACTION REQUIRED TODAY
+    - "deadlines_due_dates"
+    - "payments_due"
+    - "time_sensitive_replies"
+    - "calendar_conflicts"
+  tier2:  # IMPORTANT — ACT THIS WEEK
+    - "professional_networking"
+    - "financial_account_alerts"
+    - "job_search_recruiting"
+    - "property_management"
+  tier3:  # AWARENESS
+    - "newsletters_industry_news"
+    - "personal_correspondence"
+    - "academic_mba"
+    - "receipts_confirmations"
+  tier4:  # LOW PRIORITY / NOISE
+    - "marketing_promotions"
+    - "automated_notifications"
+    - "spam_unsubscribe_candidates"
+
+# ─── Sender Overrides ────────────────────────────────────
+# Patterns that auto-escalate regardless of content
+sender_overrides:
+  # These senders are ALWAYS Tier 1 (recruiter/hiring/family)
+  tier1_always:
+    - "*@anthropic.com"
+    - "*@google.com"
+    - "*@meta.com"
+    - "*@snowflake.com"
+    - "*@netflix.com"
+    - "*@roblox.com"
+    - "*@nvidia.com"
+    - "*@amd.com"
+    - "*@notion.so"
+    - "*@intuit.com"
+    - "*@elastic.co"
+    - "*@rubrik.com"
+    - "*@capgemini.com"
+    - "*@greenhouse.io"
+    - "*@lever.co"
+    - "*@ashbyhq.com"
+    # Add family emails below:
+    # - "parent1@gmail.com"
+    # - "parent2@gmail.com"
+
+  # These senders always go to Tier 4
+  tier4_always:
+    - "*@e-offers.dominos.com"
+    - "*@mail.stubhub.com"
+    - "*@kocowa.com"
+    - "noreply@*"
+
+# ─── Keyword Rules ───────────────────────────────────────
+keywords:
+  # These keywords add +20 to urgency score
+  urgency_boost:
+    - "urgent"
+    - "deadline"
+    - "overdue"
+    - "final notice"
+    - "action required"
+    - "time-sensitive"
+    - "expiring"
+    - "past due"
+    - "last chance"
+    - "immediately"
+    - "asap"
+  
+  # Payments/charges above this amount auto-escalate to Tier 2+
+  financial_threshold_usd: 100
+
+# ─── Delivery ────────────────────────────────────────────
+delivery:
+  # Options: "gmail", "telegram", "both"
+  method: "both"
+  
+  gmail:
+    send_to: "sn10019@gmail.com"        # Your primary email
+    subject_template: "Morning Brief — {date}"
+  
+  telegram:
+    # 1. Search @BotFather on Telegram, send /newbot
+    # 2. Name it "Morning Brief Bot"
+    # 3. Copy the token here
+    # Set via TELEGRAM_BOT_TOKEN environment variable
+    bot_token: ""
+    # 4. Send any message to your bot
+    # 5. Visit https://api.telegram.org/bot<TOKEN>/getUpdates
+    # 6. Copy chat_id here
+    # Set via TELEGRAM_CHAT_ID environment variable
+    chat_id: ""
+
+# ─── Schedule ────────────────────────────────────────────
+schedule:
+  time: "10:00"
+  timezone: "America/Los_Angeles"
+
+# ─── Logging ─────────────────────────────────────────────
+logging:
+  level: "INFO"
+  file: "logs/morning-brief.log"
+
+# ─── Personal Context (fed to the LLM) ──────────────────
+# This helps the AI understand your priorities
+personal_context: |
+  I'm an MBA graduating May 2026 from Michigan Ross, actively job searching.
+  Target roles: Strategy, BizOps, Strategic Finance, GTM/RevOps at Bay Area tech companies.
+  I have a signed offer with Capgemini Invent starting June 2026.
+  I manage a rental property at 260 King Street, Unit 747, San Francisco.
+  Recruiter or hiring manager emails from any tech company are automatically top priority.
+  Family emails (especially from parents) are always important.
+  I previously worked at Lyft (FP&A) and Exelixis, interned at ServiceNow.

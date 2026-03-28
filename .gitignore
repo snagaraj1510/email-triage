@@ -1,0 +1,9 @@
+credentials/
+*.pyc
+__pycache__/
+logs/
+.env
+*.egg-info/
+dist/
+build/
+.DS_Store
