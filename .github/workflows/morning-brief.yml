@@ -34,12 +34,14 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Write Gmail tokens
+        # Store each account's token as a GitHub secret named GMAIL_TOKEN_1, GMAIL_TOKEN_2, etc.
+        # See config.example.yaml for account setup instructions.
         run: |
           mkdir -p credentials
-          echo '${{ secrets.GMAIL_TOKEN_SN10019 }}'        > credentials/token_sn10019.json
-          echo '${{ secrets.GMAIL_TOKEN_S_NAGARAJ1510 }}'  > credentials/token_s_nagaraj1510.json
-          echo '${{ secrets.GMAIL_TOKEN_MULTISTAR1732 }}'  > credentials/token_multistar1732.json
-          echo '${{ secrets.GMAIL_TOKEN_SHREYN_UMICH }}'   > credentials/token_shreyn_umich.json
+          echo '${{ secrets.GMAIL_TOKEN_1 }}' > credentials/token_account1.json
+          echo '${{ secrets.GMAIL_TOKEN_2 }}' > credentials/token_account2.json
+          echo '${{ secrets.GMAIL_TOKEN_3 }}' > credentials/token_account3.json
+          echo '${{ secrets.GMAIL_TOKEN_4 }}' > credentials/token_account4.json
 
       - name: Run Morning Brief
         env:
