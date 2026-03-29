@@ -2,11 +2,24 @@ name: Morning Brief
 
 on:
   schedule:
-    - cron: '0 14 * * 1-5'  # 9am EST Mon-Fri (14:00 UTC)
+    - cron: '0 13 * * 1-5'  # 9am EDT (UTC-4, summer)
+    - cron: '0 14 * * 1-5'  # 9am EST (UTC-5, winter)
   workflow_dispatch:          # manual trigger from GitHub UI
 
 jobs:
+  check-time:
+    runs-on: ubuntu-latest
+    outputs:
+      is_9am: ${{ steps.check.outputs.is_9am }}
+    steps:
+      - id: check
+        run: |
+          HOUR=$(TZ=America/New_York date +%H)
+          echo "is_9am=$( [ "$HOUR" = "09" ] && echo true || echo false )" >> $GITHUB_OUTPUT
+
   morning-brief:
+    needs: check-time
+    if: needs.check-time.outputs.is_9am == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
