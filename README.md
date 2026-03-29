@@ -1,5 +1,7 @@
 # Morning Brief — Email Triage
 
+> **Why I built this:** Managing multiple inboxes during an active job search meant spending 20–30 minutes every morning just triaging email — figuring out what actually needed attention versus what could wait. I wanted a system that would apply the same prioritization logic I'd use manually, but automatically, before I even opened my laptop. So I built a pipeline that reads across all my accounts, classifies every email by urgency and consequence using Claude, and pushes a ranked digest to my inbox and Telegram each morning.
+
 Reads your Gmail every morning, classifies and prioritizes emails using AI, and delivers a formatted digest to your inbox and Telegram. Runs automatically via GitHub Actions — no laptop required.
 
 ## Features
@@ -73,10 +75,10 @@ Go to your repo → Settings → Secrets and variables → Actions → New repos
 | `ANTHROPIC_API_KEY` | Your Anthropic API key |
 | `TELEGRAM_BOT_TOKEN` | From [@BotFather](https://t.me/botfather) on Telegram |
 | `TELEGRAM_CHAT_ID` | From [@userinfobot](https://t.me/userinfobot) on Telegram |
-| `GMAIL_TOKEN_SN10019` | Contents of `credentials/token_sn10019.json` |
-| `GMAIL_TOKEN_S_NAGARAJ1510` | Contents of `credentials/token_s_nagaraj1510.json` |
-| `GMAIL_TOKEN_MULTISTAR1732` | Contents of `credentials/token_multistar1732.json` |
-| `GMAIL_TOKEN_SHREYN_UMICH` | Contents of `credentials/token_shreyn_umich.json` |
+| `GMAIL_TOKEN_1` | Contents of `credentials/token_account1.json` |
+| `GMAIL_TOKEN_2` | Contents of `credentials/token_account2.json` (if using multiple accounts) |
+| `GMAIL_TOKEN_3` | Contents of `credentials/token_account3.json` (if using multiple accounts) |
+| `GMAIL_TOKEN_4` | Contents of `credentials/token_account4.json` (if using multiple accounts) |
 
 ### Manual trigger
 
@@ -95,7 +97,7 @@ Set `llm.backend: ollama` in `config.yaml`. Note: Ollama only works for local ru
 
 ```
 email-triage/
-├── config.yaml              # All configuration
+├── config.example.yaml      # Configuration template (copy to config.yaml)
 ├── requirements.txt
 ├── .github/workflows/
 │   └── morning-brief.yml    # GitHub Actions schedule
