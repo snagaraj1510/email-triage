@@ -2,7 +2,7 @@ name: Morning Brief
 
 on:
   schedule:
-    - cron: '0 17 * * 1-5'  # 10am PT Mon-Fri (17:00 UTC)
+    - cron: '0 14 * * 1-5'  # 9am EST Mon-Fri (14:00 UTC)
   workflow_dispatch:          # manual trigger from GitHub UI
 
 jobs:
