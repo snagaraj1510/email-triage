@@ -1,0 +1,36 @@
+name: Morning Brief
+
+on:
+  schedule:
+    - cron: '0 17 * * 1-5'  # 10am PT Mon-Fri (17:00 UTC)
+  workflow_dispatch:          # manual trigger from GitHub UI
+
+jobs:
+  morning-brief:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write Gmail tokens
+        run: |
+          mkdir -p credentials
+          echo '${{ secrets.GMAIL_TOKEN_SN10019 }}'        > credentials/token_sn10019.json
+          echo '${{ secrets.GMAIL_TOKEN_S_NAGARAJ1510 }}'  > credentials/token_s_nagaraj1510.json
+          echo '${{ secrets.GMAIL_TOKEN_MULTISTAR1732 }}'  > credentials/token_multistar1732.json
+          echo '${{ secrets.GMAIL_TOKEN_SHREYN_UMICH }}'   > credentials/token_shreyn_umich.json
+
+      - name: Run Morning Brief
+        env:
+          ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python src/main.py
