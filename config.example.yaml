@@ -1,5 +1,7 @@
 # ═══════════════════════════════════════════════════════════
 # Morning Brief — Configuration
+# Copy this file to config.yaml and fill in your values.
+# config.yaml is gitignored — never commit personal details.
 # ═══════════════════════════════════════════════════════════
 
 version: "1.0"
@@ -7,18 +9,13 @@ version: "1.0"
 # ─── Gmail API ────────────────────────────────────────────
 gmail:
   accounts:
-    - email: "sn10019@gmail.com"
+    - email: "your-primary@gmail.com"
       credentials_path: "credentials/client_secret.json"
-      token_path: "credentials/token_sn10019.json"
-    - email: "s.nagaraj1510@gmail.com"
-      credentials_path: "credentials/client_secret.json"
-      token_path: "credentials/token_s_nagaraj1510.json"
-    - email: "multistar1732@gmail.com"
-      credentials_path: "credentials/client_secret.json"
-      token_path: "credentials/token_multistar1732.json"
-    - email: "shreyn@umich.edu"
-      credentials_path: "credentials/client_secret.json"
-      token_path: "credentials/token_shreyn_umich.json"
+      token_path: "credentials/token_primary.json"
+    # Add more accounts as needed:
+    # - email: "your-secondary@gmail.com"
+    #   credentials_path: "credentials/client_secret.json"
+    #   token_path: "credentials/token_secondary.json"
   scopes:
     - "https://www.googleapis.com/auth/gmail.readonly"
     - "https://www.googleapis.com/auth/gmail.send"
@@ -30,12 +27,12 @@ gmail:
 # Options: "ollama" (free, local) or "anthropic" (paid API)
 llm:
   backend: "anthropic"
-  
+
   ollama:
     model: "llama3.1:8b"
     base_url: "http://localhost:11434"
     # For better accuracy, try "llama3.1:70b" if your machine supports it
-  
+
   anthropic:
     # Uses ANTHROPIC_API_KEY environment variable
     model: "claude-haiku-4-5-20251001"    # ~$0.03/month (recommended)
@@ -75,33 +72,18 @@ categories:
 # ─── Sender Overrides ────────────────────────────────────
 # Patterns that auto-escalate regardless of content
 sender_overrides:
-  # These senders are ALWAYS Tier 1 (recruiter/hiring/family)
+  # These senders are ALWAYS Tier 1 (add recruiters, hiring domains, family)
   tier1_always:
-    - "*@anthropic.com"
-    - "*@google.com"
-    - "*@meta.com"
-    - "*@snowflake.com"
-    - "*@netflix.com"
-    - "*@roblox.com"
-    - "*@nvidia.com"
-    - "*@amd.com"
-    - "*@notion.so"
-    - "*@intuit.com"
-    - "*@elastic.co"
-    - "*@rubrik.com"
-    - "*@capgemini.com"
     - "*@greenhouse.io"
     - "*@lever.co"
     - "*@ashbyhq.com"
-    # Add family emails below:
-    # - "parent1@gmail.com"
-    # - "parent2@gmail.com"
+    # Add company domains you're targeting:
+    # - "*@yourcompany.com"
+    # Add family emails:
+    # - "family@example.com"
 
   # These senders always go to Tier 4
   tier4_always:
-    - "*@e-offers.dominos.com"
-    - "*@mail.stubhub.com"
-    - "*@kocowa.com"
     - "noreply@*"
 
 # ─── Keyword Rules ───────────────────────────────────────
@@ -119,7 +101,7 @@ keywords:
     - "last chance"
     - "immediately"
     - "asap"
-  
+
   # Payments/charges above this amount auto-escalate to Tier 2+
   financial_threshold_usd: 100
 
@@ -127,26 +109,21 @@ keywords:
 delivery:
   # Options: "gmail", "telegram", "both"
   method: "both"
-  
+
   gmail:
-    send_to: "sn10019@gmail.com"        # Your primary email
+    send_to: "your-email@gmail.com"
     subject_template: "Morning Brief — {date}"
-  
+
   telegram:
     # 1. Search @BotFather on Telegram, send /newbot
-    # 2. Name it "Morning Brief Bot"
-    # 3. Copy the token here
-    # Set via TELEGRAM_BOT_TOKEN environment variable
+    # 2. Set via TELEGRAM_BOT_TOKEN environment variable
     bot_token: ""
-    # 4. Send any message to your bot
-    # 5. Visit https://api.telegram.org/bot<TOKEN>/getUpdates
-    # 6. Copy chat_id here
-    # Set via TELEGRAM_CHAT_ID environment variable
+    # 3. Set via TELEGRAM_CHAT_ID environment variable
     chat_id: ""
 
 # ─── Schedule ────────────────────────────────────────────
 schedule:
-  time: "10:00"
+  time: "08:00"
   timezone: "America/Los_Angeles"
 
 # ─── Logging ─────────────────────────────────────────────
@@ -155,12 +132,9 @@ logging:
   file: "logs/morning-brief.log"
 
 # ─── Personal Context (fed to the LLM) ──────────────────
-# This helps the AI understand your priorities
+# Describe your priorities so the AI can triage intelligently.
+# Keep this generic — your real context lives in your local config.yaml only.
 personal_context: |
-  I'm an MBA graduating May 2026 from Michigan Ross, actively job searching.
-  Target roles: Strategy, BizOps, Strategic Finance, GTM/RevOps at Bay Area tech companies.
-  I have a signed offer with Capgemini Invent starting June 2026.
-  I manage a rental property in San Francisco.
-  Recruiter or hiring manager emails from any tech company are automatically top priority.
-  Family emails (especially from parents) are always important.
-  I previously worked at Lyft (FP&A) and Exelixis, interned at ServiceNow.
+  Describe your role, job search status, and email priorities here.
+  Example: I'm actively job searching. Recruiter emails are top priority.
+  I manage a rental property. Family emails are always important.

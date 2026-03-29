@@ -7,3 +7,8 @@ logs/
 dist/
 build/
 .DS_Store
+
+# ── Personal / private data — never commit ──────────────
+# config.yaml contains email addresses and personal context
+# Use config.example.yaml as the committed template instead
+config.yaml
