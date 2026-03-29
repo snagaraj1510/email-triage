@@ -1,126 +1,122 @@
-# Morning Brief — Automated Email Triage & Daily Digest
+# Morning Brief — Email Triage
 
-An automated system that reads your Gmail every morning, classifies and prioritizes emails using AI, and delivers a formatted digest to your inbox (+ optional Telegram push notification).
+Reads your Gmail every morning, classifies and prioritizes emails using AI, and delivers a formatted digest to your inbox and Telegram. Runs automatically via GitHub Actions — no laptop required.
 
-## Quick Start (15 minutes)
+## Features
 
-### 1. Prerequisites
-- Python 3.11+
-- A Gmail account (your other email accounts should forward here)
-- One of:
-  - **Ollama** installed locally with `llama3.1:8b` (free, recommended)
-  - **Anthropic API key** (Haiku: ~$0.03/month, Sonnet: ~$0.30/month)
+- **Multi-account Gmail** — fetches from up to 4 Gmail accounts in one digest
+- **AI classification** — categorizes emails into 4 priority tiers using Claude (or Ollama locally)
+- **Smart scoring** — weighted rubric across urgency, consequence, relationship, and effort
+- **Sender overrides** — auto-escalate recruiters, hiring managers, and key contacts to Tier 1
+- **Dual delivery** — HTML email digest + Telegram push notification
+- **Runs in the cloud** — GitHub Actions triggers at 9am ET Mon-Fri, no laptop needed
 
-### 2. Install Dependencies
+## Priority Tiers
+
+| Tier | Label | Examples |
+|------|-------|---------|
+| T1 | Action Required Today | Deadlines, payments due, calendar conflicts, time-sensitive replies |
+| T2 | Important — Act This Week | Recruiting, financial alerts, networking, property management |
+| T3 | Awareness | Newsletters, personal correspondence, receipts |
+| T4 | Low Priority / Noise | Marketing, automated notifications, spam candidates |
+
+## Setup
+
+### 1. Clone and install
 
 ```bash
+git clone https://github.com/snagaraj1510/email-triage.git
 cd email-triage
 pip install -r requirements.txt
 ```
 
-### 3. Set Up Gmail API (OAuth2 — Free)
+### 2. Set up Gmail API
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or use existing)
-3. Enable the **Gmail API**: APIs & Services → Library → search "Gmail API" → Enable
-4. Create OAuth2 credentials:
-   - APIs & Services → Credentials → Create Credentials → OAuth client ID
-   - Application type: **Desktop app**
-   - Download the JSON file
-5. Save it as `credentials/client_secret.json`
-6. Run the auth flow once:
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Enable the **Gmail API**: APIs & Services → Library → search "Gmail API" → Enable
+3. Create OAuth credentials: APIs & Services → Credentials → Create Credentials → OAuth client ID → Desktop app
+4. Download and save as `credentials/client_secret.json`
+5. Authorize each Gmail account:
 
 ```bash
 python src/auth_setup.py
 ```
 
-This opens a browser window. Sign in, grant read-only access, and the token is saved to `credentials/token.json`.
+This opens a browser for each account and saves tokens to `credentials/`.
 
-### 4. Configure
+### 3. Configure
 
 Edit `config.yaml`:
-- Set your email address under `delivery.gmail.send_to`
-- Choose your LLM backend (`ollama` or `anthropic`)
-- If using Anthropic, set your API key as an environment variable:
-  ```bash
-  export ANTHROPIC_API_KEY="sk-ant-..."
-  ```
-- (Optional) Set up Telegram bot — see instructions in config.yaml comments
-- Customize `sender_overrides` with your priority contacts
+- Add your Gmail accounts under `gmail.accounts`
+- Set `delivery.gmail.send_to` to your primary email
+- Choose LLM backend: `anthropic` (recommended) or `ollama`
+- Set your Anthropic API key as an env var: `export ANTHROPIC_API_KEY="sk-ant-..."`
+- Customize `sender_overrides` with priority contacts
 
-### 5. Test Run
+### 4. Test locally
 
 ```bash
-python src/main.py
+python src/main.py --dry-run   # classify without sending
+python src/main.py             # full run with delivery
 ```
 
-This fetches the last 24 hours of email, classifies everything, and delivers your digest.
+## GitHub Actions (Automated — Recommended)
 
-### 6. Schedule (Cron)
+The workflow runs at **9am ET Mon-Fri** automatically, handling EST/EDT transitions year-round.
+
+### Required GitHub Secrets
+
+Go to your repo → Settings → Secrets and variables → Actions → New repository secret:
+
+| Secret | Value |
+|--------|-------|
+| `ANTHROPIC_API_KEY` | Your Anthropic API key |
+| `TELEGRAM_BOT_TOKEN` | From [@BotFather](https://t.me/botfather) on Telegram |
+| `TELEGRAM_CHAT_ID` | From [@userinfobot](https://t.me/userinfobot) on Telegram |
+| `GMAIL_TOKEN_SN10019` | Contents of `credentials/token_sn10019.json` |
+| `GMAIL_TOKEN_S_NAGARAJ1510` | Contents of `credentials/token_s_nagaraj1510.json` |
+| `GMAIL_TOKEN_MULTISTAR1732` | Contents of `credentials/token_multistar1732.json` |
+| `GMAIL_TOKEN_SHREYN_UMICH` | Contents of `credentials/token_shreyn_umich.json` |
+
+### Manual trigger
+
+Go to Actions → Morning Brief → **Run workflow** to send a briefing on demand.
+
+## Using Ollama (Free, No API Key)
 
 ```bash
-# Run the installer script
-chmod +x cron_setup.sh
-./cron_setup.sh
+ollama pull llama3.1:8b
+ollama serve
 ```
 
-Or manually add to crontab:
-```bash
-crontab -e
-# Add this line (10 AM PT = 5 PM UTC during PDT):
-0 17 * * * cd /path/to/email-triage && /usr/bin/python3 src/main.py >> logs/morning-brief.log 2>&1
-```
-
-## Architecture
-
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Gmail API   │ ──▶ │   Classify   │ ──▶ │    Score     │ ──▶ │   Deliver    │
-│  (OAuth2)    │     │  (LLM/Rules) │     │  (Rubric)    │     │ (Email/TG)   │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
-```
-
-## Cost
-
-| Component | Monthly Cost |
-|-----------|-------------|
-| Gmail API | Free |
-| Ollama + Llama 3.1 | Free (local) |
-| OR Haiku API | ~$0.03/month |
-| OR Sonnet API | ~$0.30/month |
-| Gmail SMTP delivery | Free |
-| Telegram Bot | Free |
+Set `llm.backend: ollama` in `config.yaml`. Note: Ollama only works for local runs, not GitHub Actions.
 
 ## File Structure
 
 ```
 email-triage/
 ├── config.yaml              # All configuration
-├── requirements.txt         # Python dependencies
-├── cron_setup.sh           # Crontab installer
-├── credentials/            # OAuth tokens (gitignored)
+├── requirements.txt
+├── .github/workflows/
+│   └── morning-brief.yml    # GitHub Actions schedule
+├── credentials/             # OAuth tokens (gitignored)
 │   ├── client_secret.json
-│   └── token.json
+│   └── token_*.json
 ├── src/
-│   ├── main.py             # Orchestrator
-│   ├── auth_setup.py       # One-time OAuth setup
-│   ├── fetch_emails.py     # Gmail API fetcher
-│   ├── classify.py         # LLM classification
-│   ├── score.py            # Priority scoring + overrides
-│   ├── format_digest.py    # HTML digest formatter
-│   └── deliver.py          # Email/Telegram sender
+│   ├── main.py              # Orchestrator
+│   ├── auth_setup.py        # One-time OAuth setup
+│   ├── fetch_emails.py      # Gmail API fetcher
+│   ├── classify.py          # LLM classification
+│   ├── score.py             # Priority scoring + overrides
+│   ├── format_digest.py     # HTML digest formatter
+│   └── deliver.py           # Email + Telegram sender
 ├── prompts/
-│   └── classify_prompt.txt # Classification prompt
-├── templates/
-│   └── digest.html         # Jinja2 email template
-├── tests/
-│   └── test_classify.py    # Unit tests
-└── logs/                   # Runtime logs
+│   └── classify_prompt.txt
+└── logs/
 ```
 
 ## Troubleshooting
 
-- **"Token expired"**: Delete `credentials/token.json` and re-run `python src/auth_setup.py`
-- **Ollama not responding**: Ensure Ollama is running (`ollama serve`) and the model is pulled (`ollama pull llama3.1:8b`)
-- **Gmail API quota**: Free tier allows 10,000 requests/day — more than enough
-- **Emails missing**: Check that your other email accounts are forwarding to Gmail (Settings → Accounts and Import)
+- **Token expired**: Delete the relevant `credentials/token_*.json` and re-run `python src/auth_setup.py`
+- **No emails showing**: Check `fetch_window_hours` in `config.yaml` (default: 24 hours)
+- **Telegram not sending**: Verify `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set correctly
