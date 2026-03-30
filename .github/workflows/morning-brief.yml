@@ -34,13 +34,19 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Write config and credentials
+        env:
+          CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
+          GMAIL_TOKEN_SN10019: ${{ secrets.GMAIL_TOKEN_SN10019 }}
+          GMAIL_TOKEN_S_NAGARAJ1510: ${{ secrets.GMAIL_TOKEN_S_NAGARAJ1510 }}
+          GMAIL_TOKEN_MULTISTAR1732: ${{ secrets.GMAIL_TOKEN_MULTISTAR1732 }}
+          GMAIL_TOKEN_SHREYN_UMICH: ${{ secrets.GMAIL_TOKEN_SHREYN_UMICH }}
         run: |
-          echo '${{ secrets.CONFIG_YAML }}' > config.yaml
+          printf '%s' "$CONFIG_YAML" > config.yaml
           mkdir -p credentials
-          echo '${{ secrets.GMAIL_TOKEN_SN10019 }}'        > credentials/token_sn10019.json
-          echo '${{ secrets.GMAIL_TOKEN_S_NAGARAJ1510 }}'  > credentials/token_s_nagaraj1510.json
-          echo '${{ secrets.GMAIL_TOKEN_MULTISTAR1732 }}'  > credentials/token_multistar1732.json
-          echo '${{ secrets.GMAIL_TOKEN_SHREYN_UMICH }}'   > credentials/token_shreyn_umich.json
+          printf '%s' "$GMAIL_TOKEN_SN10019"        > credentials/token_sn10019.json
+          printf '%s' "$GMAIL_TOKEN_S_NAGARAJ1510"  > credentials/token_s_nagaraj1510.json
+          printf '%s' "$GMAIL_TOKEN_MULTISTAR1732"  > credentials/token_multistar1732.json
+          printf '%s' "$GMAIL_TOKEN_SHREYN_UMICH"   > credentials/token_shreyn_umich.json
 
       - name: Run Morning Brief
         env:
