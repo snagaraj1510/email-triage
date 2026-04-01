@@ -71,6 +71,7 @@ def _generate_draft_text(email_data: dict, config: dict) -> str:
 
     prompt_template = _load_draft_prompt()
     prompt = prompt_template.format(
+        personal_context=config.get('personal_context', ''),
         sender_name=email_data.get('sender', ''),
         sender_email=email_data.get('sender_email', ''),
         subject=email_data.get('subject', ''),
@@ -131,6 +132,7 @@ def create_drafts(scored_emails: list[dict], config: dict) -> dict:
 
     max_drafts = drafts_cfg.get('max_per_run', 5)
     no_draft_cats = set(drafts_cfg.get('no_draft_categories', NO_DRAFT_CATEGORIES))
+    no_draft_senders = [s.lower() for s in drafts_cfg.get('no_draft_senders', [])]
 
     # Only consider representative emails (one per thread) that are draft-eligible
     candidates = [
@@ -149,6 +151,15 @@ def create_drafts(scored_emails: list[dict], config: dict) -> dict:
     for email_data in candidates[:max_drafts]:
         email_id = email_data['email_id']
         sender_email = email_data.get('sender_email', '')
+
+        # Check configurable no_draft_senders list (exact or @domain match)
+        sender_lower = sender_email.lower()
+        if any(
+            sender_lower == s or (s.startswith('@') and sender_lower.endswith(s))
+            for s in no_draft_senders
+        ):
+            logger.info(f"Skipped draft (no_draft_senders config): {sender_email}")
+            continue
 
         # Belt-and-suspenders: re-check automated sender signals
         if _AUTOMATED_RE.match(sender_email):

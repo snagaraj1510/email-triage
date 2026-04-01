@@ -104,3 +104,15 @@ def get_weekly_stats(history: dict) -> list[dict]:
     """Return the last 7 days of daily stats for the weekly rollup."""
     cutoff = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
     return [s for s in history['daily_stats'] if s['date'] >= cutoff]
+
+
+def get_tier4_senders_for_prompt(history: dict, top_n: int = 30) -> str:
+    """Return a formatted string of frequent Tier 4 senders for the agent system prompt."""
+    tier4 = history.get('tier4_senders', {})
+    if not tier4:
+        return ''
+    sorted_senders = sorted(tier4.items(), key=lambda x: x[1].get('count', 0), reverse=True)[:top_n]
+    lines = ['Frequent Tier 4 senders (auto-deprioritize unless content changes):']
+    for sender, data in sorted_senders:
+        lines.append(f"  - {sender} (seen {data.get('count', 1)}x)")
+    return '\n'.join(lines)

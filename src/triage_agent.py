@@ -16,10 +16,11 @@ from thread_grouper import build_agent_payload
 logger = logging.getLogger(__name__)
 
 
-def _load_system_prompt() -> str:
+def _load_system_prompt(config: dict) -> str:
     prompt_path = os.path.join(os.path.dirname(__file__), '..', 'prompts', 'triage_system.txt')
     with open(prompt_path, encoding='utf-8') as f:
-        return f.read()
+        template = f.read()
+    return template.format(personal_context=config.get('personal_context', ''))
 
 
 def _clean_json(text: str) -> str:
@@ -49,8 +50,12 @@ def _call_haiku(system_prompt: str, user_message: str, config: dict) -> str:
     message = client.messages.create(
         model=model,
         max_tokens=max_tokens,
-        temperature=0.1,
-        system=system_prompt,
+        temperature=0.0,
+        system=[{
+            'type': 'text',
+            'text': system_prompt,
+            'cache_control': {'type': 'ephemeral'},
+        }],
         messages=[{'role': 'user', 'content': user_message}],
     )
     return message.content[0].text
@@ -70,14 +75,18 @@ def _call_sonnet_fallback(system_prompt: str, user_message: str, config: dict) -
     message = client.messages.create(
         model=model,
         max_tokens=8192,
-        temperature=0.1,
-        system=system_prompt,
+        temperature=0.0,
+        system=[{
+            'type': 'text',
+            'text': system_prompt,
+            'cache_control': {'type': 'ephemeral'},
+        }],
         messages=[{'role': 'user', 'content': user_message}],
     )
     return message.content[0].text
 
 
-def run_triage_agent(thread_groups: list[dict], config: dict) -> dict:
+def run_triage_agent(thread_groups: list[dict], config: dict, sender_history_context: str = '') -> dict:
     """
     Run the triage agent on all thread groups in a single (or split) call.
 
@@ -90,7 +99,9 @@ def run_triage_agent(thread_groups: list[dict], config: dict) -> dict:
     if not thread_groups:
         return {'executive_summary': 'No emails in the last 24 hours.', 'thread_groups': []}
 
-    system_prompt = _load_system_prompt()
+    system_prompt = _load_system_prompt(config)
+    if sender_history_context:
+        system_prompt += f'\n\n## SENDER HISTORY\n{sender_history_context}'
     agent_cfg = config.get('agent', {})
     batch_size = agent_cfg.get('batch_size', 80)
     max_retries = agent_cfg.get('max_retries', 2)

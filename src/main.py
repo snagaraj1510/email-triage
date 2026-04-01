@@ -27,7 +27,7 @@ from thread_grouper import group_threads
 from triage_agent import run_triage_agent
 from guardrails import validate_and_flatten
 from draft_agent import create_drafts
-from sender_history import load_history, update_history, save_history, get_persistent_unsubscribe_candidates
+from sender_history import load_history, update_history, save_history, get_persistent_unsubscribe_candidates, get_tier4_senders_for_prompt
 from format_digest import format_html_digest, format_telegram_summary
 from deliver import deliver, save_local_fallback
 
@@ -91,7 +91,9 @@ def main():
     # ── Step 3: Agentic triage ──
     logger.info('Step 3/6: Running triage agent...')
     try:
-        triage_result = run_triage_agent(thread_groups, config)
+        _pre_triage_history = load_history()
+        sender_history_context = get_tier4_senders_for_prompt(_pre_triage_history)
+        triage_result = run_triage_agent(thread_groups, config, sender_history_context)
         logger.info(f"Agent returned {len(triage_result.get('thread_groups', []))} thread classifications")
     except Exception as e:
         logger.error(f'Triage agent failed: {e}')

@@ -43,6 +43,8 @@ drafts:
   no_draft_categories:
     - "calendar_conflicts"
     - "payments_due"
+  no_draft_senders: []    # Block draft generation per sender, e.g. ["noreply@foo.com", "@automated.com"]
+                          # Use @ prefix for domain wildcard (matches anything@automated.com)
 
 # ─── Delivery ────────────────────────────────────────────
 delivery:
