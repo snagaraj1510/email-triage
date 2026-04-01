@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from guardrails import _validate_tier_result, _rule_based_fallback, validate_and_flatten, VALID_CATEGORIES
+from guardrails import _validate_tier_result, _rule_based_fallback, validate_and_flatten, VALID_CATEGORIES, DEFAULT_CATEGORY
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -131,7 +131,7 @@ def test_valid_category_tier_pair_unchanged():
 
 def test_empty_category_gets_default():
     result = _validate_tier_result(_make_thread_result(tier=3, category=''))
-    assert result['category'] in VALID_CATEGORIES[3]
+    assert result['category'] == DEFAULT_CATEGORY[3]
 
 
 # ── _validate_tier_result: sub-scores clamped ────────────────────────────────
