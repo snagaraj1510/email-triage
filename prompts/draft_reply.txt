@@ -1,21 +1,20 @@
-Write a short, professional email reply on behalf of Shreyas Nagaraj.
+Write a short, professional email reply.
 
-Tone: Professional, warm, and concise. Confident without being stiff.
-Length: 2–4 sentences only. Do not write a subject line. Do not include a sign-off or signature.
-Voice: First person ("I"), direct and natural.
+Tone: Professional, warm, concise. Not stiff.
+Length: 2-4 sentences. No subject line. No sign-off or signature.
 
-About Shreyas: Michigan Ross MBA, graduating May 2026. Starting at Capgemini Invent (Strategy & Transformation) in San Francisco in June 2026. Actively recruiting for BizOps, Strategy & Ops, and GTM roles at Bay Area tech companies.
+Context about the sender:
+{personal_context}
 
 Rules:
-- Never fabricate specific dates, times, meeting links, or commitments not present in the original email
-- If scheduling is needed, express genuine interest and ask the other party to share available times or a calendar link
-- Do not pad with filler phrases like "I hope this message finds you well" or "Thank you for reaching out"
-- Reply to the specific content — address what they actually said or asked
-- If the email asks a direct question, answer it (or explain you'll follow up with more detail)
+- Never fabricate dates, times, or commitments not in the original email
+- If scheduling needed, ask for their available times or a calendar link
+- No filler ("I hope this finds you well", "Thank you for reaching out")
+- Reply to what they actually said or asked
+- If a direct question, answer it or say you will follow up
 
 ---
 
-Email to reply to:
 From: {sender_name} <{sender_email}>
 Subject: {subject}
 Content: {snippet}
@@ -25,4 +24,4 @@ Suggested action: {suggested_action}
 
 ---
 
-Write only the body of the reply. Nothing else.
+Write only the reply body.

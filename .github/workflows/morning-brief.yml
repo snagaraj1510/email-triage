@@ -7,7 +7,7 @@ on:
   workflow_dispatch:           # manual trigger from GitHub UI
 
 permissions:
-  contents: write              # needed to commit sender_history.json
+  contents: write
 
 jobs:
   morning-brief:
@@ -18,7 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Time window guard: accept 9 AM – 1:59 PM ET (covers GH Actions cron drift)
       # Two crons handle DST; only one will land on hour 9.
       # Accept 8-10 AM ET to tolerate GitHub Actions cron drift.
       - name: Check time window
@@ -47,19 +46,26 @@ jobs:
         if: steps.timecheck.outputs.proceed == 'true'
         env:
           CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
-          GMAIL_TOKEN_SN10019: ${{ secrets.GMAIL_TOKEN_SN10019 }}
-          GMAIL_TOKEN_S_NAGARAJ1510: ${{ secrets.GMAIL_TOKEN_S_NAGARAJ1510 }}
-          GMAIL_TOKEN_MULTISTAR1732: ${{ secrets.GMAIL_TOKEN_MULTISTAR1732 }}
-          GMAIL_TOKEN_SHREYN_UMICH: ${{ secrets.GMAIL_TOKEN_SHREYN_UMICH }}
+          GMAIL_TOKEN_1: ${{ secrets.GMAIL_TOKEN_1 }}
+          GMAIL_TOKEN_2: ${{ secrets.GMAIL_TOKEN_2 }}
+          GMAIL_TOKEN_3: ${{ secrets.GMAIL_TOKEN_3 }}
+          GMAIL_TOKEN_4: ${{ secrets.GMAIL_TOKEN_4 }}
           SENDER_HISTORY: ${{ secrets.SENDER_HISTORY }}
         run: |
           printf '%s' "$CONFIG_YAML" > config.yaml
           mkdir -p credentials data
-          printf '%s' "$GMAIL_TOKEN_SN10019"        > credentials/token_sn10019.json
-          printf '%s' "$GMAIL_TOKEN_S_NAGARAJ1510"  > credentials/token_s_nagaraj1510.json
-          printf '%s' "$GMAIL_TOKEN_MULTISTAR1732"  > credentials/token_multistar1732.json
-          printf '%s' "$GMAIL_TOKEN_SHREYN_UMICH"   > credentials/token_shreyn_umich.json
-          # Restore sender history (empty JSON object if secret not yet set)
+          # Token file names must match token_path values in your config.yaml
+          # Map generic secrets to the file paths your config expects
+          python3 -c "
+          import yaml, os
+          cfg = yaml.safe_load(open('config.yaml'))
+          tokens = [os.environ.get(f'GMAIL_TOKEN_{i+1}', '') for i in range(4)]
+          for i, acct in enumerate(cfg['gmail']['accounts'][:4]):
+              if i < len(tokens) and tokens[i]:
+                  path = acct['token_path']
+                  os.makedirs(os.path.dirname(path), exist_ok=True)
+                  open(path, 'w').write(tokens[i])
+          "
           if [ -n "$SENDER_HISTORY" ]; then
             printf '%s' "$SENDER_HISTORY" > data/sender_history.json
           else
@@ -74,7 +80,7 @@ jobs:
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python src/main.py
 
-      - name: Persist sender history to secrets
+      - name: Persist sender history
         if: steps.timecheck.outputs.proceed == 'true' && always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
@@ -118,14 +124,22 @@ jobs:
         if: steps.daycheck.outputs.is_sunday == 'true'
         env:
           CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
-          GMAIL_TOKEN_SN10019: ${{ secrets.GMAIL_TOKEN_SN10019 }}
-          GMAIL_TOKEN_S_NAGARAJ1510: ${{ secrets.GMAIL_TOKEN_S_NAGARAJ1510 }}
+          GMAIL_TOKEN_1: ${{ secrets.GMAIL_TOKEN_1 }}
+          GMAIL_TOKEN_2: ${{ secrets.GMAIL_TOKEN_2 }}
           SENDER_HISTORY: ${{ secrets.SENDER_HISTORY }}
         run: |
           printf '%s' "$CONFIG_YAML" > config.yaml
           mkdir -p credentials data
-          printf '%s' "$GMAIL_TOKEN_SN10019"        > credentials/token_sn10019.json
-          printf '%s' "$GMAIL_TOKEN_S_NAGARAJ1510"  > credentials/token_s_nagaraj1510.json
+          python3 -c "
+          import yaml, os
+          cfg = yaml.safe_load(open('config.yaml'))
+          tokens = [os.environ.get(f'GMAIL_TOKEN_{i+1}', '') for i in range(4)]
+          for i, acct in enumerate(cfg['gmail']['accounts'][:4]):
+              if i < len(tokens) and tokens[i]:
+                  path = acct['token_path']
+                  os.makedirs(os.path.dirname(path), exist_ok=True)
+                  open(path, 'w').write(tokens[i])
+          "
           if [ -n "$SENDER_HISTORY" ]; then
             printf '%s' "$SENDER_HISTORY" > data/sender_history.json
           else

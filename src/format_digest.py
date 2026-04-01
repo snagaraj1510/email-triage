@@ -37,13 +37,18 @@ TIER_CONFIG = {
     4: {'emoji': '&#9898;', 'label': 'LOW PRIORITY', 'color': '#9E9E9E', 'bg': '#F5F5F5'},
 }
 
-# Account short-name → color mapping for inbox badges
-ACCOUNT_COLORS = {
-    'sn10019': '#5B7FFF',
-    's.nagaraj1510': '#8B5CF6',
-    'multistar1732': '#06B6D4',
-    'shreyn': '#F59E0B',
-}
+# Rotating palette for inbox badge colors (assigned dynamically per account)
+_PALETTE = ['#5B7FFF', '#8B5CF6', '#06B6D4', '#F59E0B', '#EF4444', '#10B981', '#F97316', '#6366F1']
+
+
+def _build_account_colors(scored_emails: list[dict]) -> dict:
+    """Assign a color to each unique account short-name from the palette."""
+    seen = {}
+    for e in scored_emails:
+        short = e.get('account_short', '')
+        if short and short not in seen:
+            seen[short] = _PALETTE[len(seen) % len(_PALETTE)]
+    return seen
 
 HTML_TEMPLATE = Template("""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -245,6 +250,7 @@ def format_html_digest(
 
     now = datetime.now()
     model_name = config.get('agent', {}).get('model', 'claude-haiku-4-5-20251001')
+    account_colors = _build_account_colors(representative)
 
     return HTML_TEMPLATE.render(
         tier_emails=tier_emails,
