@@ -12,3 +12,4 @@ build/
 # config.yaml contains email addresses and personal context
 # Use config.example.yaml as the committed template instead
 config.yaml
+data/sender_history.json
